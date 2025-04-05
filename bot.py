@@ -16,7 +16,9 @@ bot = telebot.TeleBot(bot_token)
 def handle_message(message: Message):
     info = f"""Вы написали: `{message.text}`
 Пользователь: `{message.from_user.username}`
-Чат: `{message.chat.id}`"""
+Чат: `{message.chat.id}`
+Версия бота: 0.0.2
+"""
     print(info)
     bot.send_message(message.chat.id, info, parse_mode="Markdown")
 
