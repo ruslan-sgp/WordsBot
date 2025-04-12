@@ -74,7 +74,7 @@ def send_word(message: Message):
 
 @bot.message_handler(commands=["start"])
 def handle_start(message: Message):
-    print("Получена команда /start")
+    print(f"Получена команда /start от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}")
     username = message.from_user.full_name if message.from_user.full_name else message.from_user.username
     text = f"""Привет {username}! 👋 
 
@@ -91,7 +91,8 @@ def handle_start(message: Message):
 
 @bot.message_handler()
 def handle_message(message: Message):
-    # print_info(message)
+    print(f"Получено сообщение от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}")
+    print(message.text)
     word = message.text
     correct_word = user_sessions[message.from_user.id]
     if word == correct_word:
