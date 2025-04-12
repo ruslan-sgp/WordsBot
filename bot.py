@@ -85,7 +85,7 @@ def handle_start(message: Message):
 
 @bot.message_handler()
 def handle_message(message: Message):
-    ...
+    print_info(message)
 
 
 def print_info(message):
