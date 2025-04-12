@@ -41,7 +41,9 @@ words_dict = {
 
 word_pairs = [x for x in words_dict.items()]
 
-def send_word(message):
+user_sessions = {}
+
+def send_word(message: Message):
 
     random4 = []
     while len(random4) < 4:
@@ -52,6 +54,7 @@ def send_word(message):
     pair = random4[randint(0, 3)]
 
     english_word = pair[0]
+    russian_word = pair[1]
     
     keyboard = ReplyKeyboardMarkup(row_width=2)
     button1 = telebot.types.KeyboardButton(random4[0][1])
@@ -65,6 +68,9 @@ def send_word(message):
         text=f"Выбери перевод слова \n{english_word}",
         reply_markup=keyboard
     )
+
+    user_sessions[message.from_user.id] = russian_word
+
 
 @bot.message_handler(commands=["start"])
 def handle_start(message: Message):
@@ -85,7 +91,16 @@ def handle_start(message: Message):
 
 @bot.message_handler()
 def handle_message(message: Message):
-    print_info(message)
+    # print_info(message)
+    word = message.text
+    correct_word = user_sessions[message.from_user.id]
+    if word == correct_word:
+        text = "Верно! Переходим к следующему слову"
+        bot.send_message(message.chat.id, text)
+        send_word(message)
+    else:
+        text = f"Неправильно! Попробуйте еще раз"
+        bot.send_message(message.chat.id, text)
 
 
 def print_info(message):
@@ -98,5 +113,3 @@ def print_info(message):
 
 
 bot.infinity_polling()
-
-
