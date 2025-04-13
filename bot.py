@@ -17,31 +17,131 @@ print("Using token ...", bot_token[-5:])
 bot = telebot.TeleBot(bot_token)
 
 words_dict = {
-    'apple': 'яблоко',
-    'book': 'книга',
-    'cat': 'кот',
-    'dog': 'собака',
-    'egg': 'яйцо',
-    'fish': 'рыба',
-    'house': 'дом',
-    'tree': 'дерево',
-    'sun': 'солнце',
-    'moon': 'луна',
-    'car': 'машина',
-    'pen': 'ручка',
-    'chair': 'стул',
-    'water': 'вода',
-    'milk': 'молоко',
-    'bird': 'птица',
-    'table': 'стол',
-    'ball': 'мяч',
-    'hand': 'рука',
-    'window': 'окно'
+    "apple": "яблоко",
+    "book": "книга",
+    "cat": "кот",
+    "dog": "собака",
+    "egg": "яйцо",
+    "fish": "рыба",
+    "house": "дом",
+    "tree": "дерево",
+    "sun": "солнце",
+    "moon": "луна",
+    "car": "машина",
+    "pen": "ручка",
+    "chair": "стул",
+    "water": "вода",
+    "milk": "молоко",
+    "bird": "птица",
+    "table": "стол",
+    "ball": "мяч",
+    "hand": "рука",
+    "window": "окно",
+}
+
+words_dict = {
+    "Picture": "Представить",
+    "Bustling": "Оживлённый",
+    "Marketplace": "Рынок",
+    "Traders": "Торговцы",
+    "Shouting": "Кричать",
+    "Prices": "Цены",
+    "Buyers": "Покупатели",
+    "Haggling": "Торговаться",
+    "Deals": "Сделки",
+    "Imagine": "Вообразить",
+    "Expanding": "Расширяться",
+    "Encompass": "Охватывать",
+    "Entire": "Весь",
+    "World": "Мир",
+    "Economy": "Экономика",
+    "Simplest": "Простейший",
+    "Form": "Форма",
+    "Ever-changing": "Постоянно меняющийся",
+    "Dynamic": "Динамичный",
+    "System": "Система",
+    "Saving": "Экономия",
+    "Allowance": "Карманные деньги",
+    "Spending": "Трата",
+    "Mall": "Торговый центр",
+    "Planning": "Планирование",
+    "Invest": "Инвестировать",
+    "Stocks": "Акции",
+    "Future": "Будущее",
+    "Fundamental": "Фундаментальный",
+    "Concepts": "Концепции",
+    "Economics": "Экономика",
+    "Decipher": "Расшифровывать",
+    "Financial": "Финансовый",
+    "News": "Новости",
+    "Informed": "Осведомлённый",
+    "Decisions": "Решения",
+    "Shape": "Формировать",
+    "Participant": "Участник",
+    "Journey": "Путешествие",
+    "Understanding": "Понимание",
+    "Resources": "Ресурсы",
+    "Companies": "Компании",
+    "Governments": "Правительства",
+    "Value": "Ценность",
+    "Supply": "Предложение",
+    "Demand": "Спрос",
+    "Market": "Рынок",
+    "Determines": "Определяет",
+    "Phone": "Телефон",
+    "Available": "Доступный",
+    "Increase": "Увеличивать",
+    "Fluctuate": "Колебаться",
+    "Boom": "Подъём",
+    "Bust": "Спад",
+    "Affect": "Влиять",
+    "Jobs": "Работа",
+    "Cost": "Стоимость",
+    "Sneakers": "Кроссовки",
+    "Money": "Деньги",
+    "Medium": "Средство",
+    "Exchange": "Обмен",
+    "Barter": "Бартер",
+    "Swap": "Обмен",
+    "Goods": "Товары",
+    "Services": "Услуги",
+    "Banks": "Банки",
+    "Safeguard": "Защищать",
+    "Deposit": "Депозит",
+    "Lend": "Давать в долг",
+    "Businesses": "Бизнес",
+    "Individuals": "Частные лица",
+    "Charge": "Взимать",
+    "Interest": "Процент",
+    "Loans": "Кредиты",
+    "Profit": "Прибыль",
+    "Regulating": "Регулирование",
+    "Circulating": "Обращение",
+    "Inflation": "Инфляция",
+    "Trade": "Торговля",
+    "Buy": "Покупать",
+    "Sell": "Продавать",
+    "Exchange Rates": "Обменные курсы",
+    "Currency": "Валюта",
+    "Worth": "Стоимость",
+    "Travel": "Путешествие",
+    "Abroad": "За границей",
+    "Purchasing Power": "Покупательная способность",
+    "Decrease": "Уменьшение",
+    "Central Bank": "Центральный банк",
+    "Savings Account": "Сберегательный счёт",
+    "Borrowing": "Заимствование",
+    "Impact": "Влияние",
+    "Economic Climate": "Экономический климат",
+    "Recessions": "Рецессии",
+    "Budget": "Бюджет",
+    "Wisely": "Мудро",
 }
 
 word_pairs = [x for x in words_dict.items()]
 
 user_sessions = {}
+
 
 def send_word(message: Message):
 
@@ -55,7 +155,7 @@ def send_word(message: Message):
 
     english_word = pair[0]
     russian_word = pair[1]
-    
+
     keyboard = ReplyKeyboardMarkup(row_width=2)
     button1 = telebot.types.KeyboardButton(random4[0][1])
     button2 = telebot.types.KeyboardButton(random4[1][1])
@@ -66,7 +166,7 @@ def send_word(message: Message):
     bot.send_message(
         chat_id=message.chat.id,
         text=f"Выбери перевод слова \n{english_word}",
-        reply_markup=keyboard
+        reply_markup=keyboard,
     )
 
     user_sessions[message.from_user.id] = russian_word
@@ -74,8 +174,14 @@ def send_word(message: Message):
 
 @bot.message_handler(commands=["start"])
 def handle_start(message: Message):
-    print(f"Получена команда /start от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}")
-    username = message.from_user.full_name if message.from_user.full_name else message.from_user.username
+    print(
+        f"Получена команда /start от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}"
+    )
+    username = (
+        message.from_user.full_name
+        if message.from_user.full_name
+        else message.from_user.username
+    )
     text = f"""Привет {username}! 👋 
 
 Я бот для изучения английских слов, версия 0.6.0.
@@ -91,7 +197,9 @@ def handle_start(message: Message):
 
 @bot.message_handler()
 def handle_message(message: Message):
-    print(f"Получено сообщение от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}")
+    print(
+        f"Получено сообщение от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}"
+    )
     print(message.text)
     word = message.text
     correct_word = user_sessions[message.from_user.id]
