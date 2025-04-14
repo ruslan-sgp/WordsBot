@@ -537,6 +537,7 @@ def send_word(message: Message):
         chat_id=message.chat.id,
         text=f"Выбери перевод слова \n\n**{english_word.upper()}**\n\nПример использования:\n\n{usage_example}",
         reply_markup=keyboard,
+        parse_mode="Markdown"
     )
 
     user_sessions[message.from_user.id] = russian_word
