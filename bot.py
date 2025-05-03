@@ -9,6 +9,7 @@ from telebot.types import ReplyKeyboardMarkup
 from random import randint, sample
 import dict_general
 import dict_econ
+import dict_pdb
 
 
 load_dotenv()
@@ -18,6 +19,7 @@ print("Using token ...", bot_token[-5:])
 dict_list = {
     "English General": ("/dict_eng", dict_general.words_dict),
     "English Economics": ("/dict_enec", dict_econ.words_dict),
+    "Python Databases": ("/dict_pdb", dict_pdb.words_dict),
 }
 
 def dict_info():
