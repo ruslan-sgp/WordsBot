@@ -14,10 +14,19 @@ load_dotenv()
 bot_token = getenv("TOKEN")
 print("Using token ...", bot_token[-5:])
 
-with open("user_sessions.json", "rt", encoding="UTF-8") as f:
-    user_sessions = json.load(f)
 
-print(user_sessions)
+user_sessions = {}
+
+def load_sessions():
+    global user_sessions
+    try:
+        with open("user_sessions.json", "rt", encoding="UTF-8") as f:
+            user_sessions = json.load(f)
+    except Exception as ex:
+        print(ex)
+    print(user_sessions)
+
+load_sessions()
 
 dict_list = {
     "English General": ("/dict_eng", dict_general.words_dict),
@@ -66,7 +75,7 @@ def load_session(user_id):
     else:
         load_dict(default_dict)
         user_session = [None, default_dict]
-        user_sessions[user_id] = user_session
+        user_sessions[str(user_id)] = user_session
 
 
 def save_sessions():
@@ -111,7 +120,7 @@ def send_word(message: Message):
         parse_mode="Markdown",
     )
 
-    user_sessions[message.from_user.id] = [russian_word, selected_dict]
+    user_session[0] = russian_word
     print(user_sessions)
 
 
@@ -153,7 +162,7 @@ def handle_message(message: Message):
         handle_command(message)
     else:
         word = message.text
-        correct_word = user_sessions[message.from_user.id][0]
+        correct_word = user_session[0]
         if word == correct_word:
             text = "Верно! Переходим к следующему слову"
             bot.send_message(message.chat.id, text)
