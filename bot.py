@@ -16,17 +16,20 @@ print("Using token ...", bot_token[-5:])
 
 
 user_sessions = {}
+user_session, words_dict, selected_dict = None, None, None
+
 
 def load_sessions():
-    global user_sessions
     try:
         with open("user_sessions.json", "rt", encoding="UTF-8") as f:
-            user_sessions = json.load(f)
+            user_sessions.update(json.load(f))
+        print("Загружены сессии:", user_sessions)
     except Exception as ex:
-        print(ex)
-    print(user_sessions)
+        print("Ошибка при загрузке файла сессий:", ex)
+
 
 load_sessions()
+
 
 dict_list = {
     "English General": ("/dict_eng", dict_general.words_dict),
@@ -35,7 +38,7 @@ dict_list = {
 }
 
 
-default_dict = "/dict_eng"
+default_dict_name = "/dict_eng"
 
 
 def dict_info():
@@ -47,10 +50,8 @@ def dict_info():
     return "\n".join(info_list)
 
 
-words_dict, selected_dict = None, None
-
-
 def load_dict(command):
+    print("Загрузка словаря", command)
     name, dict = next(
         ((k, d) for k, (cmd, d) in dict_list.items() if cmd == command), None
     )
@@ -62,26 +63,23 @@ def load_dict(command):
     return name
 
 
-user_session = None
-
-
 def load_session(user_id):
-    global user_session
-    user_session = user_sessions.get(str(user_id))
-    print("Найдена сессия", user_session)
-    if user_session:
-        dict_name = user_session[1]
-        load_dict(dict_name)
+    session = user_sessions.get(str(user_id))
+    print("Загружена сессия", session)
+    if session:
+        dict_name = session[1]
     else:
-        load_dict(default_dict)
-        user_session = [None, default_dict]
-        user_sessions[str(user_id)] = user_session
+        dict_name = default_dict_name
+        session = [None, dict_name]
+        user_sessions[str(user_id)] = session
+    global user_session
+    user_session = session
+    load_dict(dict_name)
 
 
 def save_sessions():
     with open("user_sessions.json", "wt", encoding="UTF-8") as f:
         json.dump(user_sessions, f, ensure_ascii=False, indent=2)
-
 
 
 bot = telebot.TeleBot(bot_token)
@@ -122,6 +120,7 @@ def send_word(message: Message):
 
     user_session[0] = russian_word
     print(user_sessions)
+    save_sessions()
 
 
 @bot.message_handler(commands=["start"])
@@ -176,14 +175,16 @@ def handle_command(message: Message):
     command = message.text
     if command.startswith("/dict_"):
         name = load_dict(command)
+        user_session[1] = command
         bot.send_message(message.chat.id, "Загружен словарь " + name)
         send_word(message)
+        save_sessions()
 
 
 def print_info(message):
-    info = f"""Вы написали: `{message.text}`
-Пользователь: `{message.from_user.username}`
-Чат: `{message.chat.id}`
+    info = f"""Вы написали: {message.text}
+Пользователь: {message.from_user.username}
+Чат: {message.chat.id}
 """
     print(info)
     bot.send_message(message.chat.id, info, parse_mode="Markdown")
