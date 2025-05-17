@@ -7,28 +7,16 @@ from random import randint, sample
 import dict_general
 import dict_econ
 import dict_pdb
-import json
-
+from UserSessions import (
+    load_session,
+    save_sessions,
+    selected_dict,
+    words_dict,
+)
 
 load_dotenv()
 bot_token = getenv("TOKEN")
 print("Using token ...", bot_token[-5:])
-
-
-user_sessions = {}
-user_session, words_dict, selected_dict = None, None, None
-
-
-def load_sessions():
-    try:
-        with open("user_sessions.json", "rt", encoding="UTF-8") as f:
-            user_sessions.update(json.load(f))
-        print("Загружены сессии:", user_sessions)
-    except Exception as ex:
-        print("Ошибка при загрузке файла сессий:", ex)
-
-
-load_sessions()
 
 
 dict_list = {
@@ -38,14 +26,11 @@ dict_list = {
 }
 
 
-default_dict_name = "/dict_eng"
-
-
 def dict_info():
     info_list = []
     for name in dict_list:
         command, dict = dict_list[name]
-        sel_icon = "✅" if selected_dict == command else "☑️"
+        sel_icon = "✅" if selected_dict() == command else "☑️"
         info_list.append(f"{sel_icon} {command} - {name} ({len(dict)} слов)")
     return "\n".join(info_list)
 
@@ -55,38 +40,23 @@ def load_dict(command):
     name, dict = next(
         ((k, d) for k, (cmd, d) in dict_list.items() if cmd == command), None
     )
-    global selected_dict
-    selected_dict = command
-    global words_dict
-    words_dict = dict
-    print(f"Загружен словарь {command}, {selected_dict=} {len(words_dict)=}")
+    load_session()["words_dict"] = dict
+    print(f"Загружен словарь {dict[next(iter(dict))]} ...")
     return name
-
-
-def load_session(user_id):
-    session = user_sessions.get(str(user_id))
-    print("Загружена сессия", session)
-    if session:
-        dict_name = session[1]
-    else:
-        dict_name = default_dict_name
-        session = [None, dict_name]
-        user_sessions[str(user_id)] = session
-    global user_session
-    user_session = session
-    load_dict(dict_name)
-
-
-def save_sessions():
-    with open("user_sessions.json", "wt", encoding="UTF-8") as f:
-        json.dump(user_sessions, f, ensure_ascii=False, indent=2)
 
 
 bot = telebot.TeleBot(bot_token)
 
 
 def send_word(message: Message):
-    random4 = sample(list(words_dict.keys()), 4)
+    session = load_session()
+    if not session.get("words_dict"):
+        sd = selected_dict()
+        load_dict(sd)
+    dict = words_dict()
+    random4 = sample(list(dict.keys()), 4)
+    # random4 = []
+    # word_codes = words_dict.keys()
     # while len(random4) < 4:
     #     index = randint(0, len(word_codes) - 1)
     #     new_pair = words_dict[inde]
@@ -99,16 +69,16 @@ def send_word(message: Message):
     # russian_word = pair[1]
 
     code = random4[randint(0, 3)]
-    words_data = words_dict[code]
+    words_data = dict[code]
     english_word = words_data["eng"]
     russian_word = words_data["ru"]
     usage_example = words_data["ex"]
 
     keyboard = ReplyKeyboardMarkup(row_width=2)
-    button1 = telebot.types.KeyboardButton(words_dict[random4[0]]["ru"])
-    button2 = telebot.types.KeyboardButton(words_dict[random4[1]]["ru"])
-    button3 = telebot.types.KeyboardButton(words_dict[random4[2]]["ru"])
-    button4 = telebot.types.KeyboardButton(words_dict[random4[3]]["ru"])
+    button1 = telebot.types.KeyboardButton(dict[random4[0]]["ru"])
+    button2 = telebot.types.KeyboardButton(dict[random4[1]]["ru"])
+    button3 = telebot.types.KeyboardButton(dict[random4[2]]["ru"])
+    button4 = telebot.types.KeyboardButton(dict[random4[3]]["ru"])
     keyboard.add(button1, button2, button3, button4)
 
     bot.send_message(
@@ -118,8 +88,7 @@ def send_word(message: Message):
         parse_mode="Markdown",
     )
 
-    user_session[0] = russian_word
-    print(user_sessions)
+    load_session()["correct_word"] = russian_word
     save_sessions()
 
 
@@ -129,7 +98,8 @@ def handle_start(message: Message):
         f"Получена команда /start от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}"
     )
 
-    load_session(message.from_user.id)
+    session = load_session(message.from_user.id)
+    load_dict(session["selected_dict"])
 
     username = (
         message.from_user.full_name
@@ -155,13 +125,13 @@ def handle_message(message: Message):
         f"Получено сообщение от пользователя {message.from_user.id} {message.from_user.username} {message.from_user.first_name} {message.from_user.last_name}"
     )
     print(message.text)
-    load_session(message.from_user.id)
+    session = load_session(message.from_user.id)
 
     if message.text and message.text.startswith("/"):
         handle_command(message)
     else:
         word = message.text
-        correct_word = user_session[0]
+        correct_word = session["correct_word"]
         if word == correct_word:
             text = "Верно! Переходим к следующему слову"
             bot.send_message(message.chat.id, text)
@@ -175,7 +145,7 @@ def handle_command(message: Message):
     command = message.text
     if command.startswith("/dict_"):
         name = load_dict(command)
-        user_session[1] = command
+        load_session(message.from_user.id)["selected_dict"] = command
         bot.send_message(message.chat.id, "Загружен словарь " + name)
         send_word(message)
         save_sessions()
