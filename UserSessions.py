@@ -48,8 +48,10 @@ def load_session(user_id = None):
 
 
 def selected_dict():
+    """The name of the dictionary selected by the user"""
     return user_session["selected_dict"]
 
 
 def words_dict():
+    """The dictionary object"""
     return user_session["words_dict"]

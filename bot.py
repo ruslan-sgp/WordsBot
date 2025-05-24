@@ -4,45 +4,16 @@ from os import getenv
 from dotenv import load_dotenv
 from telebot.types import ReplyKeyboardMarkup
 from random import randint, sample
-import dict_general
-import dict_econ
-import dict_pdb
 from UserSessions import (
     load_session,
     save_sessions,
     selected_dict,
-    words_dict,
 )
+from dict import dict_info, load_dict
 
 load_dotenv()
 bot_token = getenv("TOKEN")
 print("Using token ...", bot_token[-5:])
-
-
-dict_list = {
-    "English General": ("/dict_eng", dict_general.words_dict),
-    "English Economics": ("/dict_enec", dict_econ.words_dict),
-    "Python Databases": ("/dict_pdb", dict_pdb.words_dict),
-}
-
-
-def dict_info():
-    info_list = []
-    for name in dict_list:
-        command, dict = dict_list[name]
-        sel_icon = "✅" if selected_dict() == command else "☑️"
-        info_list.append(f"{sel_icon} {command} - {name} ({len(dict)} слов)")
-    return "\n".join(info_list)
-
-
-def load_dict(command):
-    print("Загрузка словаря", command)
-    name, dict = next(
-        ((k, d) for k, (cmd, d) in dict_list.items() if cmd == command), None
-    )
-    load_session()["words_dict"] = dict
-    print(f"Загружен словарь {dict[next(iter(dict))]} ...")
-    return name
 
 
 bot = telebot.TeleBot(bot_token)
@@ -50,10 +21,7 @@ bot = telebot.TeleBot(bot_token)
 
 def send_word(message: Message):
     session = load_session()
-    if not session.get("words_dict"):
-        sd = selected_dict()
-        load_dict(sd)
-    dict = words_dict()
+    dict = session.get("words_dict", load_dict(selected_dict())[1])
     random4 = sample(list(dict.keys()), 4)
     # random4 = []
     # word_codes = words_dict.keys()
@@ -99,7 +67,8 @@ def handle_start(message: Message):
     )
 
     session = load_session(message.from_user.id)
-    load_dict(session["selected_dict"])
+    selected_dict = session["selected_dict"]
+    load_dict(selected_dict)
 
     username = (
         message.from_user.full_name
@@ -110,7 +79,7 @@ def handle_start(message: Message):
 
 Я бот для изучения слов. Вот доступные словари:
 
-{dict_info()}
+{dict_info(selected_dict)}
 
 Начнём тренировку? ⬇️
 """
@@ -144,20 +113,11 @@ def handle_message(message: Message):
 def handle_command(message: Message):
     command = message.text
     if command.startswith("/dict_"):
-        name = load_dict(command)
+        name = load_dict(command)[0]
         load_session(message.from_user.id)["selected_dict"] = command
         bot.send_message(message.chat.id, "Загружен словарь " + name)
         send_word(message)
         save_sessions()
-
-
-def print_info(message):
-    info = f"""Вы написали: {message.text}
-Пользователь: {message.from_user.username}
-Чат: {message.chat.id}
-"""
-    print(info)
-    bot.send_message(message.chat.id, info, parse_mode="Markdown")
 
 
 bot.infinity_polling()
